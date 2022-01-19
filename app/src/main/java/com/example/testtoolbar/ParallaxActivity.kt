@@ -31,7 +31,6 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import me.onebone.toolbar.CollapsingToolbarScaffold
 import me.onebone.toolbar.ScrollStrategy
@@ -60,10 +59,10 @@ fun ParallaxEffect() {
     var showSuggestions by remember { mutableStateOf(false) }
     val toggle: ((Boolean) -> Unit) = { showSuggestions = it }
     val pagerState = rememberPagerState()
-    val tabData = listOf("Tab1", "Tab2", "Tab3", "Tab4")
     // Simulate a fake 2-second 'load'. Ideally this 'refreshing' value would
     // come from a ViewModel or similar
     var refreshing by remember { mutableStateOf(false) }
+    val pages = listOf("Tab1", "Tab2", "Tab3", "Tab4", "Tab5")
     LaunchedEffect(refreshing) {
         if (refreshing) {
             delay(2000)
@@ -86,32 +85,41 @@ fun ParallaxEffect() {
                         .fillMaxWidth()
                         .alpha(1f - collapsingState.progress),
                     pagerState = pagerState,
-                    coroutineScope = rememberCoroutineScope(),
-                    tabData = tabData,
+                    pages = pages
                 )
                 ExpandedState(
                     modifier = Modifier
                         .fillMaxWidth()
                         .alpha(collapsingState.progress),
                     pagerState = pagerState,
-                    showSuggestions = showSuggestions,
-                    toggle = toggle,
+                    pages = pages
                 )
             }
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                items(
-                    List(100) { "Hello World!! $it" }
+            // Display 10 items
+            HorizontalPager(
+                count = pages.size,
+                state = pagerState,
+                // Add 32.dp horizontal padding to 'center' the pages
+                contentPadding = PaddingValues(horizontal = 2.dp),
+                // Add some horizontal spacing between items
+                itemSpacing = 4.dp,
+                modifier = Modifier.fillMaxWidth()
+            ) { page ->
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
                 ) {
-                    Text(
-                        text = it,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp)
-                    )
+                    items(
+                        List(100) { "Hello World!! $it Page: $page" }
+                    ) {
+                        Text(
+                            text = it,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(4.dp)
+                        )
+                    }
                 }
             }
         }
@@ -122,8 +130,7 @@ fun ParallaxEffect() {
 private fun ExpandedState(
     modifier: Modifier,
     pagerState: PagerState,
-    showSuggestions: Boolean,
-    toggle: (Boolean) -> Unit
+    pages: List<String>
 ) {
     Column(modifier) {
         Box(
@@ -155,46 +162,50 @@ private fun ExpandedState(
                     .background(Color.Green)
             )
             Spacer(modifier = Modifier.width(16.dp))
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Column {
                 Text(
-                    text = "Followers",
+                    text = "Ravi",
                     color = Color.White,
                     style = MaterialTheme.typography.body1
                 )
-                Text(
-                    text = "Followings",
-                    color = Color.White,
-                    style = MaterialTheme.typography.body1
-                )
-                Text(text = "Posts", color = Color.White, style = MaterialTheme.typography.body1)
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Followers",
+                        color = Color.White,
+                        style = MaterialTheme.typography.body1
+                    )
+                    Text(
+                        text = "Followings",
+                        color = Color.White,
+                        style = MaterialTheme.typography.body1
+                    )
+                    Text(
+                        text = "Posts",
+                        color = Color.White,
+                        style = MaterialTheme.typography.body1
+                    )
+                }
             }
         }
-        Button(
-            onClick = { toggle(!showSuggestions) },
-            modifier = modifier
-                .width(55.dp),
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red),
-        ) {
-            Text(text = "Toggle", color = Color.White)
-        }
-        if (showSuggestions) {
+        if (true) {
             LazyRow(modifier = Modifier.fillMaxWidth()) {
                 repeat(30) {
                     item {
                         Box(
                             modifier = Modifier
                                 .size(55.dp)
-                                .padding(16.dp)
+                                .padding(4.dp)
                                 .background(if (it % 2 == 0) Color.Magenta else Color.Blue)
                         )
                     }
                 }
             }
         }
-        TabLayout(pagerState = pagerState)
+        TabLayout(pagerState = pagerState, pages = pages)
     }
 }
 
@@ -202,10 +213,8 @@ private fun ExpandedState(
 private fun CollapsedState(
     modifier: Modifier,
     pagerState: PagerState,
-    coroutineScope: CoroutineScope,
-    tabData: List<String>,
+    pages: List<String>,
 ) {
-
     Column(modifier) {
         Row(
             modifier = Modifier
@@ -215,26 +224,33 @@ private fun CollapsedState(
             Text(text = "<- Ravi", color = Color.Black, style = MaterialTheme.typography.h5)
             Text(text = "|||", color = Color.White, style = MaterialTheme.typography.h5)
         }
-        TabLayout(pagerState = pagerState)
+        TabLayout(pagerState = pagerState, pages = pages)
     }
 }
 
 @ExperimentalPagerApi
 @Composable
-private fun TabLayout(pagerState: PagerState) {
-    // Display 10 items
-    HorizontalPager(
-        count = 10,
-        state = pagerState,
-        // Add 32.dp horizontal padding to 'center' the pages
-        contentPadding = PaddingValues(horizontal = 2.dp),
-        // Add some horizontal spacing between items
-        itemSpacing = 4.dp,
-        modifier = Modifier.fillMaxWidth()
-    ) { page ->
-        PagerSampleItem(page = page)
+private fun TabLayout(pagerState: PagerState, pages: List<String>) {
+
+    TabRow(
+        // Our selected tab is our current page
+        selectedTabIndex = pagerState.currentPage,
+        // Override the indicator, using the provided pagerTabIndicatorOffset modifier
+        indicator = { tabPositions ->
+            TabRowDefaults.Indicator(
+                Modifier.pagerTabIndicatorOffset(pagerState, tabPositions)
+            )
+        }
+    ) {
+        // Add tabs for all of our pages
+        pages.forEachIndexed { index, title ->
+            Tab(
+                text = { Text(title) },
+                selected = pagerState.currentPage == index,
+                onClick = { },
+            )
+        }
     }
-    Divider()
 }
 
 @ExperimentalPagerApi
