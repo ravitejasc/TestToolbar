@@ -29,7 +29,10 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import me.onebone.toolbar.CollapsingToolbarScaffold
 import me.onebone.toolbar.ScrollStrategy
 import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
@@ -58,7 +61,19 @@ fun ParallaxEffect() {
     val toggle: ((Boolean) -> Unit) = { showSuggestions = it }
     val pagerState = rememberPagerState()
     val tabData = listOf("Tab1", "Tab2", "Tab3", "Tab4")
-    Box {
+    // Simulate a fake 2-second 'load'. Ideally this 'refreshing' value would
+    // come from a ViewModel or similar
+    var refreshing by remember { mutableStateOf(false) }
+    LaunchedEffect(refreshing) {
+        if (refreshing) {
+            delay(2000)
+            refreshing = false
+        }
+    }
+    SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing = refreshing),
+        onRefresh = { refreshing = true },
+    ) {
         CollapsingToolbarScaffold(
             modifier = Modifier.fillMaxSize(),
             state = state,
@@ -79,8 +94,6 @@ fun ParallaxEffect() {
                         .fillMaxWidth()
                         .alpha(collapsingState.progress),
                     pagerState = pagerState,
-                    coroutineScope = rememberCoroutineScope(),
-                    tabData = tabData,
                     showSuggestions = showSuggestions,
                     toggle = toggle,
                 )
@@ -109,8 +122,6 @@ fun ParallaxEffect() {
 private fun ExpandedState(
     modifier: Modifier,
     pagerState: PagerState,
-    coroutineScope: CoroutineScope,
-    tabData: List<String>,
     showSuggestions: Boolean,
     toggle: (Boolean) -> Unit
 ) {
