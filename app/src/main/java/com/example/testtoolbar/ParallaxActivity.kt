@@ -216,7 +216,7 @@ private fun ExpandedState(
     }
 }
 
-private val listItems = List(40) { randomSampleImageUrl(it) }
+val listItems = List(40) { randomSampleImageUrl(it) }
 
 @Composable
 private fun CollapsedState(

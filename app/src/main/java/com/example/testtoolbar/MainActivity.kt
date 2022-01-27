@@ -52,8 +52,9 @@ class MainActivity : ComponentActivity() {
                     //Greeting("Android")
                     //MainScreen()
                     //HomeScreen()
-                    NestedBox()
+                    //NestedBox()
                     //NestedBox2()
+                    TestEnter()
                 }
             }
         }
