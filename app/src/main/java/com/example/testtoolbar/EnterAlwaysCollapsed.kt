@@ -7,10 +7,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -38,21 +35,20 @@ fun EnterAlwaysCollapsed(
     topBar: @Composable () -> Unit = {},
     collapsingToolbar: @Composable ColumnScope.() -> Unit,
     stickyToolbar: @Composable ColumnScope.() -> Unit = {},
-    nestedList: @Composable Dp.() -> Unit
+    nestedList: @Composable Dp.(LazyListState) -> Unit
 ) {
-    val topBarHeight = remember { mutableStateOf(0F) }
-    val toolbarOffsetHeightPx = remember { mutableStateOf(0f) }
-    val toolbarHeight = remember { mutableStateOf(0f) }
-    val stickyToolbarHeight = remember { mutableStateOf(0f) }
+    var topBarHeight by remember { mutableStateOf(0F) }
+    var toolbarOffsetHeightPx by remember { mutableStateOf(0f) }
+    var toolbarHeight by remember { mutableStateOf(0f) }
+    var stickyToolbarHeight by remember { mutableStateOf(0f) }
     val scrollState = rememberLazyListState()
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 val delta = available.y
-                // called when you scroll the content
                 Log.e(
                     "NSC",
-                    "onPreScroll $delta tos ${toolbarOffsetHeightPx.value}"
+                    "onPreScroll $delta tos $toolbarOffsetHeightPx"
                 )
                 return Offset.Zero
             }
@@ -66,12 +62,9 @@ fun EnterAlwaysCollapsed(
                         it.visibleItemsInfo.lastOrNull()?.index != it.totalItemsCount - 1
                     }?.run {
                         val delta = consumed.y
-                        val newOffset = toolbarOffsetHeightPx.value + delta
-                        toolbarOffsetHeightPx.value = newOffset.coerceAtMost(0f)
-                        Log.e(
-                            "NSC",
-                            "delta $delta tos ${toolbarOffsetHeightPx.value}"
-                        )
+                        val newOffset = toolbarOffsetHeightPx + delta
+                        toolbarOffsetHeightPx = newOffset.coerceAtMost(0f)
+                        Log.e("NSC", "delta $delta tos $toolbarOffsetHeightPx")
                     }
                 return super.onPostScroll(consumed, available, source)
             }
@@ -85,34 +78,41 @@ fun EnterAlwaysCollapsed(
     ) {
         nestedList(
             with(LocalDensity.current) {
-                abs(toolbarHeight.value).toDp() + abs(topBarHeight.value).toDp()
+                abs(toolbarHeight).toDp() + abs(topBarHeight).toDp()
             },
+            scrollState
         )
         val collapsingOffset = max(
-            toolbarOffsetHeightPx.value.roundToInt(),
-            toolbarHeight.value.toInt().unaryMinus()
+            toolbarOffsetHeightPx.roundToInt(),
+            toolbarHeight.toInt().unaryMinus()
         )
         val stickyOffset = max(
-            toolbarOffsetHeightPx.value.roundToInt(),
-            toolbarHeight.value.toInt().minus(stickyToolbarHeight.value.toInt()).unaryMinus()
+            toolbarOffsetHeightPx.roundToInt(),
+            toolbarHeight.toInt().minus(stickyToolbarHeight.toInt()).unaryMinus()
         )
         Column(Modifier.fillMaxWidth()) {
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .zIndex(1F)
                 .onGloballyPositioned {
-                    topBarHeight.value = it.size.height.toFloat()
+                    topBarHeight = it.size.height.toFloat()
+                    Log.e("OGP", "topbarh $topBarHeight")
                 }) {
                 topBar()
             }
             Column(
                 modifier = Modifier
                     .onGloballyPositioned {
-                        toolbarHeight.value = it.size.height.toFloat()
+                        toolbarHeight = it.size.height.toFloat()
+                        Log.e("OGP", "tbh $toolbarHeight")
                     }
             ) {
                 Column(
                     modifier = Modifier.offset {
+                        Log.e(
+                            "OFFS",
+                            "cl stickyOffset $stickyOffset collapsingOffset $collapsingOffset topBarHeight $topBarHeight"
+                        )
                         IntOffset(x = 0, y = collapsingOffset)
                     }
                 ) {
@@ -121,9 +121,14 @@ fun EnterAlwaysCollapsed(
                 Column(
                     modifier = Modifier
                         .onGloballyPositioned {
-                            stickyToolbarHeight.value = it.size.height.toFloat()
+                            stickyToolbarHeight = it.size.height.toFloat()
+                            Log.e("OGP", "stbh $stickyToolbarHeight")
                         }
                         .offset {
+                            Log.e(
+                                "OFFS",
+                                "st stickyOffset $stickyOffset collapsingOffset $collapsingOffset topBarHeight $topBarHeight"
+                            )
                             IntOffset(x = 0, y = stickyOffset)
                         }) {
                     stickyToolbar()
@@ -196,8 +201,9 @@ fun TestEnter() {
                 .height(50.dp)
                 .background(Color.Red),
         )
-    }) {
+    }) { state ->
         LazyColumn(
+            state = state,
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White),
