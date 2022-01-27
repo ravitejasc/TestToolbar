@@ -50,9 +50,9 @@ class MainActivity : ComponentActivity() {
                     /*val state by viewModel.state.collectAsState()
                     TopDataScreen(state, viewModel::changeParent, viewModel::changeChild)*/
                     //Greeting("Android")
-                    MainScreen()
+                    //MainScreen()
                     //HomeScreen()
-                    //NestedBox()
+                    NestedBox()
                     //NestedBox2()
                 }
             }

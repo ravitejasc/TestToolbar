@@ -29,18 +29,15 @@ import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
 import kotlin.math.roundToInt
 
-
 @Composable
 fun NestedBox() {
 // here we use LazyColumn that has build-in nested scroll, but we want to act like a
 // parent for this LazyColumn and participate in its nested scroll.
 // Let's make a collapsing toolbar for LazyColumn
-    val toolbarHeight = 48.dp
+    val toolbarHeight = 250.dp
     val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
 // our offset to collapse toolbar
-    val toolbarOffsetHeightPx =
-
-        remember { mutableStateOf(0f) }
+    val toolbarOffsetHeightPx = remember { mutableStateOf(0f) }
 // now, let's create connection to the nested scroll system and listen to the scroll
 // happening inside child LazyColumn
     val nestedScrollConnection = remember {
@@ -77,6 +74,7 @@ fun NestedBox() {
         }
         TopAppBar(
             modifier = Modifier
+                .verticalScroll(rememberScrollState())
                 .height(toolbarHeight)
                 .offset { IntOffset(x = 0, y = toolbarOffsetHeightPx.value.roundToInt()) },
             title = { Text("toolbar offset is ${toolbarOffsetHeightPx.value}") }

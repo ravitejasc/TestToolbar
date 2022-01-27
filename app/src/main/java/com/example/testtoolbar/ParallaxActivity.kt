@@ -6,11 +6,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -24,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
+import coil.compose.rememberImagePainter
 import com.example.testtoolbar.ui.theme.CollapsingToolbarTheme
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -32,6 +34,7 @@ import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import me.onebone.toolbar.CollapsingToolbarScaffold
 import me.onebone.toolbar.ScrollStrategy
 import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
@@ -57,7 +60,7 @@ fun ParallaxEffect() {
     val state = rememberCollapsingToolbarScaffoldState()
     val collapsingState = state.toolbarState
     var showSuggestions by remember { mutableStateOf(false) }
-    val toggle: ((Boolean) -> Unit) = { showSuggestions = it }
+    val toggle: (() -> Unit) = { showSuggestions = !showSuggestions }
     val pagerState = rememberPagerState()
     // Simulate a fake 2-second 'load'. Ideally this 'refreshing' value would
     // come from a ViewModel or similar
@@ -92,7 +95,9 @@ fun ParallaxEffect() {
                         .fillMaxWidth()
                         .alpha(collapsingState.progress),
                     pagerState = pagerState,
-                    pages = pages
+                    pages = pages,
+                    showSuggestions = showSuggestions,
+                    toggleShow = toggle
                 )
             }
         ) {
@@ -105,20 +110,12 @@ fun ParallaxEffect() {
                 // Add some horizontal spacing between items
                 itemSpacing = 4.dp,
                 modifier = Modifier.fillMaxWidth()
-            ) { page ->
+            ) {
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    items(
-                        List(100) { "Hello World!! $it Page: $page" }
-                    ) {
-                        Text(
-                            text = it,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(4.dp)
-                        )
+                    itemsIndexed(listItems) { index, imageUrl ->
+                        ListItem(pagerState.currentPage, index, imageUrl, Modifier.fillMaxWidth())
                     }
                 }
             }
@@ -130,13 +127,15 @@ fun ParallaxEffect() {
 private fun ExpandedState(
     modifier: Modifier,
     pagerState: PagerState,
-    pages: List<String>
+    pages: List<String>,
+    showSuggestions: Boolean,
+    toggleShow: (() -> Unit) = {}
 ) {
     Column(modifier) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp)
+                .height(150.dp)
                 .background(Color.Cyan),
         ) {
             Row(
@@ -191,13 +190,21 @@ private fun ExpandedState(
                 }
             }
         }
-        if (true) {
+        Button(onClick = toggleShow) {
+            Text(
+                text = "Ravi",
+                color = Color.White,
+                style = MaterialTheme.typography.body1
+            )
+        }
+        if (showSuggestions) {
             LazyRow(modifier = Modifier.fillMaxWidth()) {
                 repeat(30) {
                     item {
                         Box(
                             modifier = Modifier
-                                .size(55.dp)
+                                .width(160.dp)
+                                .height(200.dp)
                                 .padding(4.dp)
                                 .background(if (it % 2 == 0) Color.Magenta else Color.Blue)
                         )
@@ -208,6 +215,8 @@ private fun ExpandedState(
         TabLayout(pagerState = pagerState, pages = pages)
     }
 }
+
+private val listItems = List(40) { randomSampleImageUrl(it) }
 
 @Composable
 private fun CollapsedState(
@@ -231,7 +240,7 @@ private fun CollapsedState(
 @ExperimentalPagerApi
 @Composable
 private fun TabLayout(pagerState: PagerState, pages: List<String>) {
-
+    val scope = rememberCoroutineScope()
     TabRow(
         // Our selected tab is our current page
         selectedTabIndex = pagerState.currentPage,
@@ -247,7 +256,11 @@ private fun TabLayout(pagerState: PagerState, pages: List<String>) {
             Tab(
                 text = { Text(title) },
                 selected = pagerState.currentPage == index,
-                onClick = { },
+                onClick = {
+                    scope.launch {
+                        pagerState.animateScrollToPage(index)
+                    }
+                },
             )
         }
     }
@@ -293,21 +306,27 @@ private inline val Dp.absoluteValue: Dp
     get() = value.absoluteValue.dp
 
 @Composable
-internal fun PagerSampleItem(
+fun ListItem(
     page: Int,
-    modifier: Modifier = Modifier,
+    index: Int,
+    imageUrl: String,
+    modifier: Modifier = Modifier
 ) {
-    Box(modifier) {
-        // Displays the page index
-        Text(
-            text = page.toString(),
+    Row(modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Image(
+            painter = rememberImagePainter(imageUrl),
+            contentDescription = null,
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-                .background(MaterialTheme.colors.surface, RoundedCornerShape(4.dp))
-                .sizeIn(minWidth = 40.dp, minHeight = 40.dp)
-                .padding(8.dp)
-                .wrapContentSize(Alignment.Center)
+                .size(100.dp)
+                .clip(RoundedCornerShape(4.dp)),
+        )
+        Spacer(Modifier.width(16.dp))
+        Text(
+            text = "Text: $index Page: $page",
+            style = MaterialTheme.typography.subtitle2,
+            modifier = Modifier
+                .weight(1f)
+                .align(Alignment.CenterVertically)
         )
     }
 }
