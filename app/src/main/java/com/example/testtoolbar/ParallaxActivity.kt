@@ -54,6 +54,8 @@ class ParallaxActivity : ComponentActivity() {
     }
 }
 
+val tabs = listOf("Tab1", "Tab2", "Tab3", "Tab4", "Tab5")
+
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun ParallaxEffect() {
@@ -65,7 +67,6 @@ fun ParallaxEffect() {
     // Simulate a fake 2-second 'load'. Ideally this 'refreshing' value would
     // come from a ViewModel or similar
     var refreshing by remember { mutableStateOf(false) }
-    val pages = listOf("Tab1", "Tab2", "Tab3", "Tab4", "Tab5")
     LaunchedEffect(refreshing) {
         if (refreshing) {
             delay(2000)
@@ -88,14 +89,14 @@ fun ParallaxEffect() {
                         .fillMaxWidth()
                         .alpha(1f - collapsingState.progress),
                     pagerState = pagerState,
-                    pages = pages
+                    pages = tabs
                 )
                 ExpandedState(
                     modifier = Modifier
                         .fillMaxWidth()
                         .alpha(collapsingState.progress),
                     pagerState = pagerState,
-                    pages = pages,
+                    pages = tabs,
                     showSuggestions = showSuggestions,
                     toggleShow = toggle
                 )
@@ -103,7 +104,7 @@ fun ParallaxEffect() {
         ) {
             // Display 10 items
             HorizontalPager(
-                count = pages.size,
+                count = tabs.size,
                 state = pagerState,
                 // Add 32.dp horizontal padding to 'center' the pages
                 contentPadding = PaddingValues(horizontal = 2.dp),
@@ -239,7 +240,7 @@ private fun CollapsedState(
 
 @ExperimentalPagerApi
 @Composable
-private fun TabLayout(pagerState: PagerState, pages: List<String>) {
+fun TabLayout(pagerState: PagerState = rememberPagerState(), pages: List<String> = tabs) {
     val scope = rememberCoroutineScope()
     TabRow(
         // Our selected tab is our current page
