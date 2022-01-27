@@ -255,7 +255,12 @@ fun TabLayout(pagerState: PagerState = rememberPagerState(), pages: List<String>
         // Add tabs for all of our pages
         pages.forEachIndexed { index, title ->
             Tab(
-                text = { Text(title) },
+                text = {
+                    Text(
+                        title,
+                        color = if (pagerState.currentPage == index) Color.Gray else Color.White
+                    )
+                },
                 selected = pagerState.currentPage == index,
                 onClick = {
                     scope.launch {

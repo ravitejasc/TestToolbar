@@ -1,30 +1,38 @@
-@file:OptIn(ExperimentalPagerApi::class)
+@file:OptIn(ExperimentalPagerApi::class, ExperimentalFoundationApi::class)
 
 package com.example.testtoolbar
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import coil.compose.rememberImagePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -72,7 +80,7 @@ fun EnterAlwaysCollapsed(
     }
     Box(
         Modifier
-            .fillMaxSize()
+            .fillMaxSize().background(Color.White)
             .nestedScroll(nestedScrollConnection)
             .let { parentModifier(it) }
     ) {
@@ -108,13 +116,16 @@ fun EnterAlwaysCollapsed(
                     }
             ) {
                 Column(
-                    modifier = Modifier.offset {
-                        Log.e(
-                            "OFFS",
-                            "cl stickyOffset $stickyOffset collapsingOffset $collapsingOffset titleToolbarHeight $titleToolbarHeight toolbarHeight $toolbarHeight"
-                        )
-                        IntOffset(x = 0, y = collapsingOffset)
-                    }
+                    modifier = Modifier
+                        .offset {
+                            Log.e(
+                                "OFFS",
+                                "cl stickyOffset $stickyOffset collapsingOffset $collapsingOffset " +
+                                        "titleToolbarHeight $titleToolbarHeight toolbarHeight " +
+                                        "$toolbarHeight diff ${abs(collapsingOffset.unaryPlus() - stickyOffset.unaryPlus())}"
+                            )
+                            IntOffset(x = 0, y = collapsingOffset)
+                        }
                 ) {
                     collapsingToolbar(this)
                 }
@@ -127,7 +138,9 @@ fun EnterAlwaysCollapsed(
                         .offset {
                             Log.e(
                                 "OFFS",
-                                "st stickyOffset $stickyOffset collapsingOffset $collapsingOffset titleToolbarHeight $titleToolbarHeight toolbarHeight $toolbarHeight"
+                                "st stickyOffset $stickyOffset collapsingOffset $collapsingOffset " +
+                                        "titleToolbarHeight $titleToolbarHeight toolbarHeight " +
+                                        "$toolbarHeight diff ${abs(collapsingOffset.unaryPlus() - stickyOffset.unaryPlus())}"
                             )
                             IntOffset(x = 0, y = stickyOffset)
                         }) {
@@ -140,7 +153,9 @@ fun EnterAlwaysCollapsed(
 
 @Composable
 fun TestEnter() {
+    LogCompositions(tag = "TestEnter")
     var show by remember { mutableStateOf(false) }
+    val pagerState = rememberPagerState()
     EnterAlwaysCollapsed(titleToolbar = {
         Row(
             modifier = Modifier
@@ -195,23 +210,39 @@ fun TestEnter() {
             }
         }
     }, stickyToolbar = {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-                .background(Color.Red),
-        )
-    }) { state ->
-        LazyColumn(
-            state = state,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
-            contentPadding = PaddingValues(top = this),
+        TabLayout(pagerState = pagerState)
+    }) {
+        HorizontalPager(
+            count = tabs.size,
+            state = pagerState,
+            itemSpacing = 4.dp,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            itemsIndexed(listItems) { index, imageUrl ->
-                ListItem(1, index, imageUrl, Modifier.fillMaxWidth())
+            LazyVerticalGrid(
+                state = rememberLazyListState(),
+                verticalArrangement = Arrangement.spacedBy(1.dp),
+                horizontalArrangement = Arrangement.spacedBy(1.dp),
+                modifier = Modifier.fillMaxSize(),
+                cells = GridCells.Fixed(3),
+                contentPadding = PaddingValues(top = this@EnterAlwaysCollapsed),
+            ) {
+                itemsIndexed(listItems) { _, imageUrl ->
+                    GridItem(imageUrl)
+                }
             }
         }
     }
+}
+
+@Composable
+fun GridItem(imageUrl: String) {
+    Image(
+        painter = rememberImagePainter(imageUrl),
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = Modifier
+            .fillMaxSize()
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(4.dp)),
+    )
 }
