@@ -32,12 +32,12 @@ import kotlin.math.roundToInt
 @Composable
 fun EnterAlwaysCollapsed(
     parentModifier: Modifier.() -> Modifier = { this },
-    topBar: @Composable () -> Unit = {},
+    titleToolbar: @Composable () -> Unit = {},
     collapsingToolbar: @Composable ColumnScope.() -> Unit,
     stickyToolbar: @Composable ColumnScope.() -> Unit = {},
     nestedList: @Composable Dp.(LazyListState) -> Unit
 ) {
-    var topBarHeight by remember { mutableStateOf(0F) }
+    var titleToolbarHeight by remember { mutableStateOf(0F) }
     var toolbarOffsetHeightPx by remember { mutableStateOf(0f) }
     var toolbarHeight by remember { mutableStateOf(0f) }
     var stickyToolbarHeight by remember { mutableStateOf(0f) }
@@ -78,7 +78,7 @@ fun EnterAlwaysCollapsed(
     ) {
         nestedList(
             with(LocalDensity.current) {
-                abs(toolbarHeight).toDp() + abs(topBarHeight).toDp()
+                abs(toolbarHeight).toDp() + abs(titleToolbarHeight).toDp()
             },
             scrollState
         )
@@ -95,10 +95,10 @@ fun EnterAlwaysCollapsed(
                 .fillMaxWidth()
                 .zIndex(1F)
                 .onGloballyPositioned {
-                    topBarHeight = it.size.height.toFloat()
-                    Log.e("OGP", "topbarh $topBarHeight")
+                    titleToolbarHeight = it.size.height.toFloat()
+                    Log.e("OGP", "titleToolbarh $titleToolbarHeight")
                 }) {
-                topBar()
+                titleToolbar()
             }
             Column(
                 modifier = Modifier
@@ -111,7 +111,7 @@ fun EnterAlwaysCollapsed(
                     modifier = Modifier.offset {
                         Log.e(
                             "OFFS",
-                            "cl stickyOffset $stickyOffset collapsingOffset $collapsingOffset topBarHeight $topBarHeight"
+                            "cl stickyOffset $stickyOffset collapsingOffset $collapsingOffset titleToolbarHeight $titleToolbarHeight toolbarHeight $toolbarHeight"
                         )
                         IntOffset(x = 0, y = collapsingOffset)
                     }
@@ -127,7 +127,7 @@ fun EnterAlwaysCollapsed(
                         .offset {
                             Log.e(
                                 "OFFS",
-                                "st stickyOffset $stickyOffset collapsingOffset $collapsingOffset topBarHeight $topBarHeight"
+                                "st stickyOffset $stickyOffset collapsingOffset $collapsingOffset titleToolbarHeight $titleToolbarHeight toolbarHeight $toolbarHeight"
                             )
                             IntOffset(x = 0, y = stickyOffset)
                         }) {
@@ -141,7 +141,7 @@ fun EnterAlwaysCollapsed(
 @Composable
 fun TestEnter() {
     var show by remember { mutableStateOf(false) }
-    EnterAlwaysCollapsed(topBar = {
+    EnterAlwaysCollapsed(titleToolbar = {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
