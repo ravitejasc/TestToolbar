@@ -47,10 +47,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val state by viewModel.state.collectAsState()
-                    TopDataScreen(state, viewModel::changeParent, viewModel::changeChild)
+                    /*val state by viewModel.state.collectAsState()
+                    TopDataScreen(state, viewModel::changeParent, viewModel::changeChild)*/
                     //Greeting("Android")
-                    //MainScreen()
+                    MainScreen()
                     //HomeScreen()
                     //NestedBox()
                     //NestedBox2()
