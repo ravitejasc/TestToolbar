@@ -5,6 +5,7 @@
 
 package com.example.testtoolbar
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -51,10 +52,13 @@ class MainActivity : ComponentActivity() {
                         //TestEnter()
                         //TestCollapse()
                         //ParallaxEffect2()
-                        VerticalNestedTest()
+                        //VerticalNestedTest()
                         //MatToolBar()
                         //ListTransitionRecipe()
                         //NestedLists()
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            CalendarView()
+                        }
                     }
                 }
             }
