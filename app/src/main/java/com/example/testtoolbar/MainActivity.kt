@@ -28,9 +28,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import com.example.testtoolbar.ui.theme.TestToolbarTheme
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.rememberInsetsPaddingValues
+import com.google.accompanist.insets.*
 import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
 
@@ -40,21 +40,25 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
-            TestToolbarTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    /*val state by viewModel.state.collectAsState()
+            ProvideWindowInsets(windowInsetsAnimationsEnabled = true) {
+                TestToolbarTheme {
+                    StatusBarRender()
+                    // A surface container using the 'background' color from the theme
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = Color.Transparent
+                    ) {
+                        /*val state by viewModel.state.collectAsState()
                     TopDataScreen(state, viewModel::changeParent, viewModel::changeChild)*/
-                    //Greeting("Android")
-                    //MainScreen()
-                    //HomeScreen()
-                    //NestedBox()
-                    //NestedBox2()
-                    TestEnter()
+                        //Greeting("Android")
+                        //MainScreen()
+                        //HomeScreen()
+                        //NestedBox()
+                        //NestedBox2()
+                        TestEnter()
+                    }
                 }
             }
         }

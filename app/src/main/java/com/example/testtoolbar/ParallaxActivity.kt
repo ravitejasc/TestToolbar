@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -240,9 +241,14 @@ private fun CollapsedState(
 
 @ExperimentalPagerApi
 @Composable
-fun TabLayout(pagerState: PagerState = rememberPagerState(), pages: List<String> = tabs) {
+fun TabLayout(
+    modifier: Modifier = Modifier,
+    pagerState: PagerState = rememberPagerState(),
+    pages: List<String> = tabs
+) {
     val scope = rememberCoroutineScope()
     TabRow(
+        modifier = modifier,
         // Our selected tab is our current page
         selectedTabIndex = pagerState.currentPage,
         // Override the indicator, using the provided pagerTabIndicatorOffset modifier
@@ -254,13 +260,9 @@ fun TabLayout(pagerState: PagerState = rememberPagerState(), pages: List<String>
     ) {
         // Add tabs for all of our pages
         pages.forEachIndexed { index, title ->
+            val textColor by animateColorAsState(if (pagerState.currentPage == index) Color.Gray else Color.White)
             Tab(
-                text = {
-                    Text(
-                        title,
-                        color = if (pagerState.currentPage == index) Color.Gray else Color.White
-                    )
-                },
+                text = { Text(title, color = textColor) },
                 selected = pagerState.currentPage == index,
                 onClick = {
                     scope.launch {
