@@ -53,6 +53,8 @@ class MainActivity : ComponentActivity() {
                         //ParallaxEffect2()
                         VerticalNestedTest()
                         //MatToolBar()
+                        //ListTransitionRecipe()
+                        //NestedLists()
                     }
                 }
             }
