@@ -126,7 +126,7 @@ fun ParallaxEffect() {
 }
 
 @Composable
-private fun ExpandedState(
+fun ExpandedState(
     modifier: Modifier,
     pagerState: PagerState,
     pages: List<String>,
@@ -218,10 +218,10 @@ private fun ExpandedState(
     }
 }
 
-val listItems = List(40) { randomSampleImageUrl(it) }
+val listItems = List(400) { randomSampleImageUrl(it) }
 
 @Composable
-private fun CollapsedState(
+fun CollapsedState(
     modifier: Modifier,
     pagerState: PagerState,
     pages: List<String>,

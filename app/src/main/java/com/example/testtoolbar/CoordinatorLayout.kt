@@ -1,13 +1,8 @@
-@file:OptIn(
-    ExperimentalPagerApi::class, ExperimentalFoundationApi::class,
-    ExperimentalCoilApi::class
-)
+@file:OptIn(ExperimentalPagerApi::class, ExperimentalFoundationApi::class)
 
 package com.example.testtoolbar
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -17,11 +12,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.rounded.AddCircle
-import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,24 +24,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
-import coil.annotation.ExperimentalCoilApi
+import androidx.compose.ui.unit.*
 import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
 import com.google.accompanist.insets.statusBarsPadding
-import com.google.accompanist.insets.ui.TopAppBar
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -57,146 +43,13 @@ import com.google.accompanist.placeholder.fade
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import com.google.accompanist.systemuicontroller.SystemUiController
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
 
 @Composable
-fun EnterAlwaysCollapsed(
-    parentModifier: Modifier.() -> Modifier = { this },
-    titleToolbar: @Composable () -> Unit = {},
-    collapsingToolbar: @Composable ColumnScope.() -> Unit,
-    stickyToolbar: @Composable ColumnScope.() -> Unit = {},
-    nestedList: @Composable Dp.(LazyListState) -> Unit,
-) {
-    var progress by remember { mutableStateOf(0F) }
-    var titleToolbarHeight by remember { mutableStateOf(0F) }
-    var toolbarOffsetHeightPx by remember { mutableStateOf(0f) }
-    var toolbarHeight by remember { mutableStateOf(0f) }
-    var stickyToolbarHeight by remember { mutableStateOf(0f) }
-    val scrollState = rememberLazyListState()
-    val nestedScrollConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                val delta = available.y
-                Log.e(
-                    "NSC",
-                    "onPreScroll $delta tos $toolbarOffsetHeightPx"
-                )
-                return Offset.Zero
-            }
-
-            override fun onPostScroll(
-                consumed: Offset, available: Offset, source: NestedScrollSource
-            ): Offset {
-                scrollState.layoutInfo
-                    .takeIf {
-                        Log.e("NSC", "ops ${it.visibleItemsInfo.lastOrNull()?.index}")
-                        it.visibleItemsInfo.lastOrNull()?.index != it.totalItemsCount - 1
-                    }?.run {
-                        val delta = consumed.y
-                        val newOffset = toolbarOffsetHeightPx + delta
-                        toolbarOffsetHeightPx = newOffset.coerceAtMost(0f)
-                        Log.e("NSC", "delta $delta tos $toolbarOffsetHeightPx")
-                    }
-                return super.onPostScroll(consumed, available, source)
-            }
-        }
-    }
-    Box(
-        Modifier
-            .fillMaxSize()
-            .nestedScroll(nestedScrollConnection)
-            .let { parentModifier(it) }
-    ) {
-        nestedList(
-            with(LocalDensity.current) { abs(toolbarHeight).toDp() },
-            scrollState
-        )
-        val collapsingOffset = max(
-            toolbarOffsetHeightPx.roundToInt(),
-            toolbarHeight.toInt().unaryMinus()
-        )
-        val stickyOffset = max(
-            toolbarOffsetHeightPx.roundToInt(),
-            toolbarHeight.toInt().minus(stickyToolbarHeight.toInt()).unaryMinus()
-        )
-        Column(
-            modifier = Modifier
-                .onGloballyPositioned {
-                    toolbarHeight = it.size.height.toFloat()
-                    Log.e("OGP", "tbh $toolbarHeight")
-                }
-        ) {
-            Column(
-                modifier = Modifier
-                    .offset {
-                        progress =
-                            abs(1 - (abs(toolbarHeight - collapsingOffset.unaryPlus()) / toolbarHeight))
-                        Log.e(
-                            "OFFS",
-                            "cl stickyOffset $stickyOffset collapsingOffset $collapsingOffset " +
-                                    "titleToolbarHeight $titleToolbarHeight toolbarHeight " +
-                                    "$toolbarHeight progress $progress diff ${abs(collapsingOffset.unaryPlus() - stickyOffset.unaryPlus())}"
-                        )
-                        IntOffset(x = 0, y = collapsingOffset)
-                    }
-            ) {
-                collapsingToolbar(this)
-            }
-            Column(
-                modifier = Modifier
-                    .onGloballyPositioned {
-                        stickyToolbarHeight = it.size.height.toFloat()
-                        Log.e("OGP", "stbh $stickyToolbarHeight")
-                    }
-                    .offset {
-                        Log.e(
-                            "OFFS",
-                            "st stickyOffset $stickyOffset collapsingOffset $collapsingOffset " +
-                                    "titleToolbarHeight $titleToolbarHeight toolbarHeight " +
-                                    "$toolbarHeight diff ${abs(collapsingOffset.unaryPlus() - stickyOffset.unaryPlus())}"
-                        )
-                        IntOffset(x = 0, y = stickyOffset)
-                    }) {
-                stickyToolbar()
-            }
-        }
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .zIndex(1F)
-            .onGloballyPositioned {
-                titleToolbarHeight = it.size.height.toFloat()
-                Log.e("OGP", "titleToolbarh $titleToolbarHeight")
-            }) {
-            titleToolbar()
-        }
-    }
-}
-
-@Composable
-fun StatusBarRender(
-    statusBarColor: Color? = null,
-    setStatusBarColor: Boolean = true,
-    darkIcons: Boolean? = null,
-) {
-    val controller: SystemUiController = rememberSystemUiController()
-    if (setStatusBarColor) {
-        val color = statusBarColor ?: Color.Transparent
-        val enableDark = darkIcons ?: (color.luminance() > 0.5f)
-        SideEffect {
-            controller.setStatusBarColor(color = color, darkIcons = enableDark)
-            controller.setSystemBarsColor(color = color, darkIcons = enableDark)
-        }
-    }
-}
-
-
-@Composable
-fun TestEnter() {
+fun TestCollapse() {
     var show by remember { mutableStateOf(false) }
     val pagerState = rememberPagerState()
     LogCompositions(tag = "TestEnter")
@@ -212,29 +65,7 @@ fun TestEnter() {
         state = rememberSwipeRefreshState(isRefreshing = refreshing),
         onRefresh = { refreshing = true },
     ) {
-        EnterAlwaysCollapsed(parentModifier = { background(Color.White) }, titleToolbar = {
-            BackInsetTopBar(
-                modifier = Modifier.border(1.dp, Color.Yellow),
-                title = "Raviteja",
-                actions = {
-                    IconButton(onClick = { }) {
-                        Icon(
-                            modifier = Modifier.size(24.dp),
-                            imageVector = Icons.Rounded.AddCircle,
-                            tint = Color.White,
-                            contentDescription = "Back"
-                        )
-                    }
-                    IconButton(onClick = {}) {
-                        Icon(
-                            modifier = Modifier.size(24.dp),
-                            imageVector = Icons.Rounded.Menu,
-                            tint = Color.White,
-                            contentDescription = "Back"
-                        )
-                    }
-                })
-        }, collapsingToolbar = {
+        CollapseToolbar(toolbar = {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -386,7 +217,7 @@ fun TestEnter() {
                     }
                 }
             }
-        }, stickyToolbar = {
+        }, keepToolbar = {
             TabLayout(
                 pagerState = pagerState,
                 modifier = Modifier//.statusBarsPadding()
@@ -418,86 +249,90 @@ fun TestEnter() {
 }
 
 @Composable
-fun GridItem(imageUrl: String) {
-    val imagePainter = rememberImagePainter(imageUrl)
-    val imageState = imagePainter.state
-    Image(
-        painter = imagePainter,
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
-        modifier = Modifier
-            .fillMaxSize()
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(4.dp))
-            .placeholder(
-                shape = RoundedCornerShape(4.dp),
-                visible = imageState is ImagePainter.State.Loading,
-                highlight = PlaceholderHighlight.fade(Color.Gray)
-            ),
-    )
-}
-
-@OptIn(ExperimentalAnimationApi::class)
-@Composable
-fun BackInsetTopBar(
-    modifier: Modifier = Modifier,
-    title: String,
-    textColor: Color = Color.White,
-    backIconColor: Color = Color.White,
-    elevation: Dp = 0.dp,
-    backgroundColor: Color = Color.Transparent,
-    onClick: () -> Unit = {},
-    actions: @Composable RowScope.() -> Unit = {},
+fun CollapseToolbar(
+    parentLayoutDecorator: Modifier.() -> Modifier = { this },
+    toolbar: @Composable ColumnScope.() -> Unit,
+    keepToolbar: @Composable ColumnScope.() -> Unit = {},
+    nestedList: @Composable Dp.(EnterAlwaysCollapsedArgs) -> Unit
 ) {
-    InsetAwareTopAppBar(
-        elevation = elevation,
-        title = {
-            Text(
-                text = title, color = textColor, style = MaterialTheme.typography.h6,
-                maxLines = 1, overflow = TextOverflow.Ellipsis
-            )
-        },
-        backgroundColor = backgroundColor,
-        navigationIcon = {
-            IconButton(onClick = onClick) {
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    imageVector = Icons.Rounded.ArrowBack,
-                    tint = backIconColor,
-                    contentDescription = "Back"
-                )
+    val toolbarOffsetHeightPx = remember { mutableStateOf(0f) }
+    val toolbarHeight = remember { mutableStateOf(0f) }
+    val keepToolbarHeight = remember { mutableStateOf(0f) }
+    val scrollState = rememberLazyListState()
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPostScroll(
+                consumed: Offset,
+                available: Offset,
+                source: NestedScrollSource
+            ): Offset {
+                scrollState.layoutInfo
+                    .takeIf {
+                        it.visibleItemsInfo.lastOrNull()?.index != it.totalItemsCount - 1
+                    }
+                    ?.run {
+                        val delta = consumed.y
+                        val newOffset = toolbarOffsetHeightPx.value + delta
+                        toolbarOffsetHeightPx.value = newOffset.coerceAtMost(0f)
+                    }
+                return super.onPostScroll(consumed, available, source)
             }
-        },
-        modifier = modifier.fillMaxWidth(),
-        actions = {
-            actions()
         }
-    )
+    }
+    Box(
+        Modifier
+            .fillMaxSize()
+            .nestedScroll(nestedScrollConnection)
+            .let { parentLayoutDecorator(it) }
+    ) {
+        nestedList(
+            with(LocalDensity.current) { abs(toolbarHeight.value).toDp() },
+            EnterAlwaysCollapsedArgs(scrollState)
+        )
+        val offset = max(
+            toolbarOffsetHeightPx.value.roundToInt(),
+            toolbarHeight.value.toInt().unaryMinus()
+        )
+        val keepOffset = max(
+            toolbarOffsetHeightPx.value.roundToInt(),
+            toolbarHeight.value.toInt().minus(keepToolbarHeight.value.toInt()).unaryMinus()
+        )
+        Column(
+            modifier = Modifier
+                .onGloballyPositioned {
+                    toolbarHeight.value = it.size.height.toFloat()
+                }
+        ) {
+            Column(
+                modifier = Modifier
+                    .offset { IntOffset(x = 0, y = offset) }
+            ) {
+                toolbar(this)
+            }
+            Column(
+                modifier = Modifier
+                    .onGloballyPositioned {
+                        keepToolbarHeight.value = it.size.height.toFloat()
+                    }
+                    .offset {
+                        IntOffset(x = 0, y = keepOffset)
+                    }) {
+                keepToolbar(this)
+            }
+        }
+    }
 }
 
-@Composable
-fun InsetAwareTopAppBar(
-    title: @Composable () -> Unit,
-    modifier: Modifier = Modifier,
-    navigationIcon: @Composable (() -> Unit)? = null,
-    actions: @Composable RowScope.() -> Unit = {},
-    backgroundColor: Color = Color.Transparent,
-    contentColor: Color = contentColorFor(backgroundColor),
-    elevation: Dp = 0.dp
+data class EnterAlwaysCollapsedArgs(
+    val scrollState: LazyListState
 ) {
-    Surface(
-        color = backgroundColor,
-        modifier = modifier,
-        shadowElevation = elevation
+    fun listProducer(
+        lazyListScope: LazyListScope,
+        nestedScrollList: (LazyListScope) -> Unit
     ) {
-        TopAppBar(
-            title = title,
-            navigationIcon = navigationIcon,
-            actions = actions,
-            backgroundColor = Color.Transparent,
-            contentColor = contentColor,
-            elevation = 0.dp,
-            modifier = Modifier
-        )
+        lazyListScope.run {
+            nestedScrollList(this)
+            item { Spacer(modifier = Modifier.size(1.dp)) }
+        }
     }
 }
