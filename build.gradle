@@ -1,7 +1,7 @@
 buildscript {
     ext {
         compose_version = '1.2.0-alpha02'
-        acc_version = '0.22.0-rc'
+        acc_version = '0.22.1-rc'
         lifecycle_version = '2.4.0'
         coil_version = '1.4.0'
     }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
@@ -57,7 +58,6 @@ fun NestedBox() {
     Box(
         Modifier
             .fillMaxSize()
-            // attach as a parent to the nested scroll system
             .nestedScroll(nestedScrollConnection)
     ) {
         // our list with build in nested scroll support that will notify us about its scroll
@@ -74,7 +74,7 @@ fun NestedBox() {
         }
         TopAppBar(
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
+                .scrollable(rememberScrollState(), Orientation.Vertical)
                 .height(toolbarHeight)
                 .offset { IntOffset(x = 0, y = toolbarOffsetHeightPx.value.roundToInt()) },
             title = { Text("toolbar offset is ${toolbarOffsetHeightPx.value}") }

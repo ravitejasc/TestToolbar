@@ -51,14 +51,18 @@ class MainActivity : ComponentActivity() {
                         //NestedBox2()
                         //TestEnter()
                         //TestCollapse()
+                        ParallaxEffect()
                         //ParallaxEffect2()
                         //VerticalNestedTest()
                         //MatToolBar()
                         //ListTransitionRecipe()
                         //NestedLists()
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             CalendarView()
-                        }
+                        }*/
+                        //CustomColumnScreen()
+                        //LargeTopbarTest()
+                        //MainScreen()
                     }
                 }
             }

@@ -144,7 +144,7 @@ fun TestCollapse() {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "I love sharechat",
+                        text = "I love compose",
                         color = Color.Black,
                         modifier = Modifier.padding(start = 16.dp)
                     )
