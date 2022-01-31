@@ -1,4 +1,7 @@
-@file:OptIn(ExperimentalPagerApi::class, ExperimentalAnimationApi::class)
+@file:OptIn(
+    ExperimentalPagerApi::class, ExperimentalAnimationApi::class,
+    ExperimentalFoundationApi::class
+)
 
 package com.example.testtoolbar
 
@@ -7,14 +10,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,6 +28,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
@@ -88,40 +91,48 @@ fun ParallaxEffect() {
             toolbarModifier = Modifier.background(MaterialTheme.colors.primary),
             enabled = true,
             toolbar = {
-                CollapsedState(
+                CollapsedState2(
                     modifier = Modifier
                         .fillMaxWidth()
+                        /* .graphicsLayer {
+                             translationY = -collapsingState.progress
+                         },*/
                         .alpha(1f - collapsingState.progress),
                     pagerState = pagerState,
                     pages = tabs
                 )
-                ExpandedState(
+                ExpandedState2(
                     modifier = Modifier
                         .fillMaxWidth()
                         .scrollable(rememberScrollState(), Orientation.Vertical)
+                        /*.graphicsLayer {
+                            translationY = -collapsingState.progress * 0.18f
+                        },*/
                         .alpha(collapsingState.progress),
                     pagerState = pagerState,
                     pages = tabs,
-                    showSuggestions = showSuggestions,
+                    show = showSuggestions,
                     toggleShow = toggle
                 )
             }
         ) {
-            // Display 10 items
             HorizontalPager(
                 count = tabs.size,
                 state = pagerState,
-                // Add 32.dp horizontal padding to 'center' the pages
-                contentPadding = PaddingValues(horizontal = 2.dp),
-                // Add some horizontal spacing between items
                 itemSpacing = 4.dp,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                //contentPadding = PaddingValues(top = this@EnterAlwaysCollapsed)
             ) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize()
+                LazyVerticalGrid(
+                    state = rememberLazyListState(),
+                    verticalArrangement = Arrangement.spacedBy(1.dp),
+                    horizontalArrangement = Arrangement.spacedBy(1.dp),
+                    modifier = Modifier.fillMaxSize(),
+                    cells = GridCells.Fixed(3),
+                    // contentPadding = cp,
                 ) {
-                    itemsIndexed(listItems) { index, imageUrl ->
-                        ListItem(pagerState.currentPage, index, imageUrl, Modifier.fillMaxWidth())
+                    itemsIndexed(listItems) { _, imageUrl ->
+                        GridItem(imageUrl)
                     }
                 }
             }

@@ -6,7 +6,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -110,26 +112,20 @@ private fun CustomColumn(
 
 @Composable
 fun MainScreen() {
-    val scrollState = rememberLazyListState()
-    var scrolledY = 0f
-    var previousOffset = 0
+    val scrollState = rememberScrollState()
     // parallax effect by offset
     Box {
         Box(
             modifier = Modifier
                 .background(Color.Magenta)
                 .graphicsLayer {
-                    /*val imageOffset = (-scrollState.firstVisibleItemScrollOffset * 0.18f)
-                    translationY = imageOffset*/
-                    scrolledY += scrollState.firstVisibleItemScrollOffset - previousOffset
-                    translationY = scrolledY * 0.5f
-                    previousOffset = scrollState.firstVisibleItemScrollOffset
+                    val imageOffset = (-scrollState.value * 0.18f)
+                    translationY = imageOffset
                 }
                 .height(240.dp)
                 .fillMaxWidth()
         )
-        LazyColumn(
-            state = scrollState,
+       Column(
             modifier = Modifier
                 .padding(top = 200.dp)
                 .background(
@@ -138,9 +134,10 @@ fun MainScreen() {
                 )
                 .fillMaxHeight()
                 .fillMaxWidth()
+                .verticalScroll(scrollState)
                 .padding(all = 16.dp)
         ) {
-            items(100) { i ->
+            repeat(100) { i ->
                 ListItem {
                     Text(text = i.toString())
                 }

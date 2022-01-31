@@ -49,7 +49,7 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 
 @Composable
-fun TestCollapse() {
+fun TestCoordinatorCollapse() {
     var show by remember { mutableStateOf(false) }
     val pagerState = rememberPagerState()
     LogCompositions(tag = "TestEnter")
